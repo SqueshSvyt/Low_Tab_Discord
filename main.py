@@ -1,5 +1,12 @@
 import asyncio
+import os
 import random
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 import discord
 from discord.ext import commands
@@ -10,7 +17,6 @@ intents.voice_states = True
 intents.members = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
-
 
 @bot.event
 async def on_ready():
@@ -28,7 +34,7 @@ async def trollmove(ctx, member: discord.Member):
         await ctx.send(f"{member.display_name} не в голосовому каналі!")
         return
 
-    voice_channels = [channel for channel in ctx.guild.voice_channels]
+    voice_channels = [vc for vc in ctx.guild.voice_channels if vc.permissions_for(member).connect]
 
     if len(voice_channels) < 2:
         await ctx.send("Потрібно хоча б 2 голосові канали для переміщення.")
@@ -36,11 +42,11 @@ async def trollmove(ctx, member: discord.Member):
 
     await ctx.send(f"😈 Починаю тролити {member.display_name}...")
 
-    for i in range(50):
+    for i in range(20):
         random_channel = random.choice(voice_channels)
         try:
             await member.move_to(random_channel)
-            # await ctx.send(f"👉 Перекинув у {random_channel.name}")
+            print(f"👉 Перекинув у {random_channel.name}")
             await asyncio.sleep(0.5)
         except Exception as e:
             await ctx.send(f"❌ Помилка при переміщенні: {str(e)}")
@@ -54,4 +60,4 @@ async def hello(ctx):
     await ctx.send('Hello there! 👋')
 
 
-bot.run('')
+bot.run(TOKEN)
